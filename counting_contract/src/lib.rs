@@ -2,28 +2,29 @@ use cosmwasm_std::{DepsMut, Deps, Env, MessageInfo, Empty, StdResult, Response, 
 
 mod contract;
 pub mod msg;
+mod state;
 
 // constructor for smart contract
 #[entry_point]
 pub fn instantiate(
-    _deps: DepsMut,
+    deps: DepsMut,
     _env: Env,
     _info: MessageInfo,
     _msg: Empty,
 ) -> StdResult<Response> {
-    Ok(Response::new())
+    contract::instantiate(deps)
 }
 
 #[entry_point]
 pub fn query(
-    _deps: Deps,
+    deps: Deps,
     _env: Env,
     msg: msg::QueryMsg,
 ) -> StdResult<Binary> {
     use msg::QueryMsg::*;
 
     match msg {
-        Value {value} => to_binary(&contract::query::value(value)),
+        Value {} => to_binary(&contract::query::value(deps)?),
     }
 }
 
@@ -62,15 +63,15 @@ mod test {
         let contract_addr = app.instantiate_contract(
             contract_id, 
             Addr::unchecked("sender"),
-            &QueryMsg::Value{value: 4}, 
+            &QueryMsg::Value{}, 
             &[], 
             "Counting", 
             None,
         ).unwrap();
         let resp: ValueResp = app
             .wrap()
-            .query_wasm_smart(contract_addr, &QueryMsg::Value{value: 4})
+            .query_wasm_smart(contract_addr, &QueryMsg::Value{})
             .unwrap();
-        assert_eq!(resp, ValueResp { value: 5});
+        assert_eq!(resp, ValueResp { value: 0});
     }
 }
