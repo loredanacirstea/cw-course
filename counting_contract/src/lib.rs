@@ -30,17 +30,21 @@ pub fn query(
 
 #[entry_point]
 pub fn execute(
-    _deps: DepsMut,
+    deps: DepsMut,
     _env: Env,
-    _info: MessageInfo,
-    _msg: Empty,
+    info: MessageInfo,
+    msg: msg::ExecMsg,
 ) -> StdResult<Response> {
-    Ok(Response::new())
+    use msg::ExecMsg::*;
+
+    match msg {
+        Poke {} => contract::exec::poke(deps, info),
+    }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::msg::{QueryMsg, ValueResp};
+    use crate::msg::{QueryMsg, ValueResp, ExecMsg};
 
     use super::*;
 
@@ -73,5 +77,30 @@ mod test {
             .query_wasm_smart(contract_addr, &QueryMsg::Value{})
             .unwrap();
         assert_eq!(resp, ValueResp { value: 0});
+    }
+
+    #[test]
+    fn poke() {
+        let mut app = App::default();
+        let sender = Addr::unchecked("sender");
+        let contract_id = app.store_code(counting_contract());
+        let contract_addr = app.instantiate_contract(
+            contract_id, 
+            sender.clone(),
+            &QueryMsg::Value{}, 
+            &[], 
+            "Counting", 
+            None,
+        ).unwrap();
+
+        app.execute_contract(sender.clone(), contract_addr.clone(), &ExecMsg::Poke {}, &[])
+            .unwrap();
+        app.execute_contract(sender, contract_addr.clone(), &ExecMsg::Poke {}, &[])
+            .unwrap();
+        let resp: ValueResp = app
+            .wrap()
+            .query_wasm_smart(contract_addr, &QueryMsg::Value{})
+            .unwrap();
+        assert_eq!(resp, ValueResp { value: 2});
     }
 }
