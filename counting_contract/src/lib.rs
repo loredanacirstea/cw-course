@@ -1,8 +1,10 @@
 use cosmwasm_std::{DepsMut, Deps, Env, MessageInfo, StdResult, Response, entry_point, Binary, to_binary};
+use error::ContractError;
 use msg::InstantiateMsg;
 
 mod contract;
 pub mod msg;
+pub mod error;
 mod state;
 
 // constructor for smart contract
@@ -35,11 +37,11 @@ pub fn execute(
     env: Env,
     info: MessageInfo,
     msg: msg::ExecMsg,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     use msg::ExecMsg::*;
 
     match msg {
-        Donate {} => contract::exec::donate(deps, info),
+        Donate {} => contract::exec::donate(deps, info).map_err(ContractError::from),
         Withdraw {} => contract::exec::withdraw(deps, env, info),
     }
 }
@@ -177,6 +179,33 @@ mod test {
         assert_eq!(app.wrap().query_all_balances(contract_addr).unwrap(), vec![]);
         assert_eq!(app.wrap().query_all_balances(sender1).unwrap(), vec![]);
         assert_eq!(app.wrap().query_all_balances(sender2).unwrap(), vec![]);
+
+    }
+
+    #[test]
+    fn unauthorized_withdraw() {
+        let owner = Addr::unchecked("owner");
+        let member = Addr::unchecked("member");
+
+        let mut app = App::default();
+        
+        let contract_id = app.store_code(counting_contract());
+        let contract_addr = app.instantiate_contract(
+            contract_id, 
+            owner.clone(),
+            &InstantiateMsg{minimal_donation: Coin::new(10, ATOM)}, 
+            &[], 
+            "Counting", 
+            None,
+        ).unwrap();
+
+        let err = app.execute_contract(member, contract_addr.clone(), &ExecMsg::Withdraw {}, &[])
+            .unwrap_err();
+
+        assert_eq!(
+            ContractError::Unauthorized {owner: owner.into()},
+            err.downcast().unwrap()
+        );
 
     }
 }
