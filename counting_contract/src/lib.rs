@@ -1,4 +1,7 @@
-use cosmwasm_std::{DepsMut, Deps, Env, MessageInfo, StdResult, Response, entry_point, Binary, to_binary};
+#[cfg(not(feature = "library"))]
+use cosmwasm_std::entry_point;
+
+use cosmwasm_std::{DepsMut, Deps, Env, MessageInfo, StdResult, Response, Binary, to_binary};
 use error::ContractError;
 use msg::InstantiateMsg;
 

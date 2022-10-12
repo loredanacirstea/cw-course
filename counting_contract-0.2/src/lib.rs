@@ -1,4 +1,7 @@
-use cosmwasm_std::{DepsMut, Deps, Env, MessageInfo, StdResult, Response, entry_point, Binary, to_binary, Empty};
+#[cfg(not(feature = "library"))]
+use cosmwasm_std::entry_point;
+
+use cosmwasm_std::{DepsMut, Deps, Env, MessageInfo, StdResult, Response, Binary, to_binary, Empty};
 use error::ContractError;
 use msg::InstantiateMsg;
 
@@ -49,6 +52,6 @@ pub fn execute(
 }
 
 #[cfg_attr(not(feature = "library"),entry_point)]
-pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> StdResult<Response> {
+pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> Result<Response, ContractError> {
     contract::migrate(deps)
 }

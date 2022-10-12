@@ -10,4 +10,10 @@ pub enum ContractError {
     Unauthorized {
         owner: String,
     },
+
+    #[error("Migrating invalid contract: {0}")]
+    InvalidName(String),
+
+    #[error("Migrating from unsuported version: {0}")]
+    InvalidVersion(String),
 }

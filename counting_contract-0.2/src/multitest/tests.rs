@@ -194,3 +194,24 @@ fn migration() {
         }
     );
 }
+
+#[test]
+fn migration_no_update() {
+    let owner = Addr::unchecked("owner");
+    let admin = Addr::unchecked("admin");
+
+    let mut app = App::default();
+
+    let code_id = CountingContract::store_code(&mut app);
+
+    let contract = CountingContract::instantiate(
+        &mut app, 
+        code_id,
+        &owner, 
+        Some(&admin),
+        "Counting contract", 
+        Coin::new(10, ATOM),
+    ).unwrap();
+
+    CountingContract::migrate(&mut app, &admin, contract.addr(), code_id).unwrap();
+}
