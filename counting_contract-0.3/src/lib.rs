@@ -1,9 +1,9 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 
-use cosmwasm_std::{DepsMut, Deps, Env, MessageInfo, StdResult, Response, Binary, to_binary, Empty};
+use cosmwasm_std::{DepsMut, Deps, Env, MessageInfo, StdResult, Response, Binary, to_binary};
 use error::ContractError;
-use msg::InstantiateMsg;
+use msg::{InstantiateMsg, MigrateMsg};
 
 mod contract;
 pub mod msg;
@@ -46,12 +46,12 @@ pub fn execute(
     use msg::ExecMsg::*;
 
     match msg {
-        Donate {} => contract::exec::donate(deps, info).map_err(ContractError::from),
+        Donate {} => contract::exec::donate(deps, env, info).map_err(ContractError::from),
         Withdraw {} => contract::exec::withdraw(deps, env, info),
     }
 }
 
 #[cfg_attr(not(feature = "library"),entry_point)]
-pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> Result<Response, ContractError> {
-    contract::migrate(deps)
+pub fn migrate(deps: DepsMut, _env: Env, msg: MigrateMsg) -> Result<Response, ContractError> {
+    contract::migrate(deps, msg)
 }

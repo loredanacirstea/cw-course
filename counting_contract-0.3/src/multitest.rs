@@ -1,7 +1,7 @@
-use cosmwasm_std::{Addr, Coin, StdResult, StdError, Empty};
+use cosmwasm_std::{Addr, Coin, StdResult, StdError};
 use cw_multi_test::{App, Executor, ContractWrapper};
 
-use crate::msg::{InstantiateMsg, ValueResp, QueryMsg, ExecMsg};
+use crate::msg::{InstantiateMsg, ValueResp, QueryMsg, ExecMsg, Parent, MigrateMsg};
 use crate::{ContractError, execute, instantiate, query, migrate};
 
 #[cfg(test)]
@@ -30,11 +30,12 @@ impl CountingContract {
         admin: Option<&Addr>,
         label: &str,
         minimal_donation: Coin,
+        parent: Option<Parent>,
     ) -> StdResult<CountingContract> {
         app.instantiate_contract(
             code_id, 
             sender.clone(), 
-            &InstantiateMsg { minimal_donation }, &[], 
+            &InstantiateMsg { minimal_donation, parent }, &[], 
             label, 
             admin.map(Addr::to_string),
         )
@@ -43,8 +44,8 @@ impl CountingContract {
     }
 
     #[track_caller]
-    pub fn migrate(app: &mut App, sender: &Addr, contract: &Addr, code_id: u64) -> StdResult<Self> {
-        app.migrate_contract(sender.clone(), contract.clone(), &Empty {}, code_id)
+    pub fn migrate(app: &mut App, sender: &Addr, contract: &Addr, code_id: u64, parent: Option<Parent>) -> StdResult<Self> {
+        app.migrate_contract(sender.clone(), contract.clone(), &MigrateMsg { parent: parent }, code_id)
             .map_err(|err| err.downcast::<StdError>().unwrap())?;
         Ok(CountingContract(contract.clone()))
     }
