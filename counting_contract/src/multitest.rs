@@ -4,6 +4,7 @@ use cw_multi_test::{App, Executor};
 use crate::msg::{InstantiateMsg, ValueResp, QueryMsg, ExecMsg};
 use crate::ContractError;
 
+#[cfg(test)]
 mod tests;
 pub struct CountingContract(Addr);
 

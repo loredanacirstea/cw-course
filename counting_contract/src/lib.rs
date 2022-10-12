@@ -6,11 +6,11 @@ mod contract;
 pub mod msg;
 pub mod error;
 mod state;
-#[cfg(test)]
+#[cfg(any(test, feature = "tests"))]
 pub mod multitest;
 
 // constructor for smart contract
-#[entry_point]
+#[cfg_attr(not(feature = "library"),entry_point)]
 pub fn instantiate(
     deps: DepsMut,
     _env: Env,
@@ -20,7 +20,7 @@ pub fn instantiate(
     contract::instantiate(deps, info, msg)
 }
 
-#[entry_point]
+#[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(
     deps: Deps,
     _env: Env,
@@ -33,7 +33,7 @@ pub fn query(
     }
 }
 
-#[entry_point]
+#[cfg_attr(not(feature = "library"),entry_point)]
 pub fn execute(
     deps: DepsMut,
     env: Env,
