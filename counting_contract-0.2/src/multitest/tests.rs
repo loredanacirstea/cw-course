@@ -2,6 +2,8 @@ use cosmwasm_std::{Addr, Coin, Empty, coins};
 use cw_multi_test::{App, Contract, ContractWrapper};
 
 use crate::{execute, instantiate, query, multitest::CountingContract, error::ContractError};
+use crate::state::{STATE, State};
+use counting_contract_0_1_0::multitest::CountingContract as CountingContract_0_1_0;
 
 fn counting_contract() -> Box<dyn Contract<Empty>> {
     let contract = ContractWrapper::new(
@@ -147,4 +149,48 @@ fn unauthorized_withdraw() {
         ContractError::Unauthorized {owner: owner.into()}
     );
 
+}
+
+#[test]
+fn migration() {
+    let owner = Addr::unchecked("owner");
+    let admin = Addr::unchecked("admin");
+    let sender = Addr::unchecked("sender");
+
+    let mut app = App::new(|router, _api, storage| {
+        router
+            .bank
+            .init_balance(storage, &sender, coins(10, ATOM))
+            .unwrap();
+    });
+
+    let old_code_id = CountingContract_0_1_0::store_code(&mut app);
+    let new_code_id = CountingContract::store_code(&mut app);
+
+    let contract = CountingContract_0_1_0::instantiate(
+        &mut app, 
+        old_code_id,
+        &owner, 
+        Some(&admin),
+        "Counting contract", 
+        Coin::new(10, ATOM),
+    ).unwrap();
+
+    contract
+        .donate(&mut app, &sender, &coins(10, ATOM))
+        .unwrap();
+    
+    let contract = CountingContract::migrate(&mut app, &admin, contract.addr(), new_code_id).unwrap();
+
+    let resp = contract.query_value(&app).unwrap();
+    assert_eq!(resp.value, 1);
+
+    let state = STATE.query(&app.wrap(), contract.addr().clone()).unwrap();
+    assert_eq!(
+        state,
+        State {
+            counter: 1,
+            minimal_donation: Coin::new(10, ATOM),
+        }
+    );
 }

@@ -1,4 +1,4 @@
-use cosmwasm_std::{DepsMut, Deps, Env, MessageInfo, StdResult, Response, entry_point, Binary, to_binary};
+use cosmwasm_std::{DepsMut, Deps, Env, MessageInfo, StdResult, Response, entry_point, Binary, to_binary, Empty};
 use error::ContractError;
 use msg::InstantiateMsg;
 
@@ -46,4 +46,9 @@ pub fn execute(
         Donate {} => contract::exec::donate(deps, info).map_err(ContractError::from),
         Withdraw {} => contract::exec::withdraw(deps, env, info),
     }
+}
+
+#[cfg_attr(not(feature = "library"),entry_point)]
+pub fn migrate(deps: DepsMut, _env: Env, _msg: Empty) -> StdResult<Response> {
+    contract::migrate(deps)
 }
