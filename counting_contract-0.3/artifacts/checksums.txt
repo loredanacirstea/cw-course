@@ -1,0 +1,1 @@
+81a80d6d538c57e351046d00ff508434495fd26cc2a7ef6652e1a7f538d1b68d  counting_contract-aarch64.wasm
