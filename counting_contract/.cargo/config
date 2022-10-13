@@ -1,6 +1,6 @@
 [alias]
 wasm = "build --release --target wasm32-unknown-unknown --lib"
-wasm-debug = "build --target wasm32-unknown-unknown"
 unit-test = "test --lib"
 integration-test = "test --test integration"
-schema = "run --example schema"
+wasm-debug = "build --target wasm32-unknown-unknown --lib"
+schema = "run schema"

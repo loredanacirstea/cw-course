@@ -3,7 +3,7 @@ use cw_multi_test::{App, Contract, ContractWrapper};
 
 use crate::{execute, instantiate, query, multitest::CountingContract, error::ContractError};
 use crate::state::{STATE, State};
-use counting_contract_0_1_0::multitest::CountingContract as CountingContract_0_1_0;
+use counting_contract_0_1::multitest::CountingContract as CountingContract_0_1_0;
 
 fn counting_contract() -> Box<dyn Contract<Empty>> {
     let contract = ContractWrapper::new(
